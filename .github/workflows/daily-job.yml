@@ -1,0 +1,36 @@
+name: Data Collector
+
+on:
+  schedule:
+    # Every 10 hours
+    - cron: '0 */10 * * *'
+
+    # Daily at midnight UTC (API reset)
+    - cron: '0 0 * * *'
+
+  workflow_dispatch:  # manual trigger
+
+jobs:
+  collect-data:
+    runs-on: ubuntu-latest
+
+    env:
+      API_KEY: ${{ secrets.H1BQQSK5MSQUR10G}}
+      DB_URI: ${{ secrets.DB_URI }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run data collection script
+        run: |
+          python data_collector.py
