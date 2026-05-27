@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>Checkout</title></head>
+<body>
+<h3>Checkout</h3>
+<form action="/api/v1/payment/process" method="POST">
+Amount: <input type="number" name="amount" required><br>
+User ID: <input type="text" name="user_id" required><br>
+Merchant ID: <input type="text" name="merchant_id" required><br>
+<button type="submit">Pay</button>
+</form>
+</body>
+</html>
