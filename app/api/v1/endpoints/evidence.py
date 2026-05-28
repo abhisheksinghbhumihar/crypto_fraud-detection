@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 
-from app.services.evidence_service import EvidenceService
+from app.api.v1.endpoints.evidence_service import EvidenceService
 
 router = APIRouter(tags=["Blockchain Evidence"])
 
