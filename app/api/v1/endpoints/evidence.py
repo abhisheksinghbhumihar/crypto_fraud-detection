@@ -65,4 +65,4 @@ async def verify_evidence(evidence_hash: str):
 
     result = evidence_service.verify_evidence(evidence_hash)
 
-     return VerifyResponse(**result)
+    return VerifyResponse(**result)
