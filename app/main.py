@@ -1,6 +1,3 @@
-cd C:\Users\anjal\OneDrive\Desktop\pubmed datttaaaa\crypto_fraud-detection
-
-@'
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import router as api_router
@@ -42,4 +39,3 @@ if __name__ == "__main__":
     import os
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-'@ | Out-File -FilePath app/main.py -Encoding utf8
