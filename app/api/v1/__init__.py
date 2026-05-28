@@ -1,10 +1,8 @@
-# fraud_detection_api/app/api/v1/__init__.py
 from fastapi import APIRouter
 from .endpoints import fraud, keystroke, mouse, stats, alerts, payment, evidence
 
 router = APIRouter()
 
-# Include health endpoints directly in the v1 router
 @router.get("/health")
 async def v1_health_check():
     return {"status": "healthy", "service": "fraud-detection-api-v1"}
@@ -13,7 +11,6 @@ async def v1_health_check():
 async def v1_stats_health():
     return {"status": "ok", "checks": {"database": "connected", "model": "loaded"}}
 
-# Include all endpoint routers
 router.include_router(fraud.router, prefix="/fraud", tags=["Fraud Detection"])
 router.include_router(keystroke.router, prefix="/keystroke", tags=["Keystroke Bot"])
 router.include_router(mouse.router, prefix="/mouse", tags=["Mouse Bot"])
