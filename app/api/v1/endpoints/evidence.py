@@ -8,7 +8,7 @@ import os
 # Add parent directory to path to import evidence_store
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))))
 
-from evidence_store.evidence_service import EvidenceService
+from app.services.evidence_service import EvidenceService
 
 router = APIRouter(tags=["Blockchain Evidence"])
 evidence_service = EvidenceService()
