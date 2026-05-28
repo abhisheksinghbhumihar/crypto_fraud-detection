@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import router as api_router
+from api.v1 import router as api_router
 
 app = FastAPI(
     title="Fraud Detection API",
