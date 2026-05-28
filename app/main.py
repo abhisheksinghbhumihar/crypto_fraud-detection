@@ -1,13 +1,10 @@
-import sys
-import os
+cd C:\Users\anjal\OneDrive\Desktop\pubmed datttaaaa\crypto_fraud-detection
 
-# Add the fraud_detection_api directory to the sys.path so that we can import the 'app' package
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
+@'
+# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import router as api_router
-from app.core.config import settings
 
 app = FastAPI(
     title="Fraud Detection API",
@@ -15,7 +12,6 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -42,3 +38,11 @@ async def root():
             "GET /docs": "Swagger documentation"
         }
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+'@ | Out-File -FilePath app/main.py -Encoding utf8
+    
