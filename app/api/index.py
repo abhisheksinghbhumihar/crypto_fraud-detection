@@ -1,4 +1,3 @@
-from app.main import app
+from main import app
 
-# Vercel serverless handler
 handler = app
