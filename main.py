@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import router as api_router
+import os  # ← ADD THIS LINE
 
 app = FastAPI(
     title="Fraud Detection API",
@@ -20,10 +21,7 @@ app.include_router(api_router)
 
 @app.get("/health")
 async def health():
-    return {
-        "status": "healthy",
-        "service": "fraud-detection"
-    }
+    return {"status": "healthy", "service": "fraud-detection"}
 
 @app.get("/")
 async def root():
