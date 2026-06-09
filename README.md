@@ -52,7 +52,7 @@ json{
 }
 
 🌐 Live Demo
-👉 https://crypto-fraud-detection-psi.vercel.app
+👉 https://www.linkedin.com/in/abhishek-kumar-973128403/
 
 🤝 Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
