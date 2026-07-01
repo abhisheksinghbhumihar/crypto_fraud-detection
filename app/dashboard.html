@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fraud Operations Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
+<body>
+  <main class="ops-shell">
+    <header class="ops-header">
+      <div>
+        <div class="ops-eyebrow">Real-time fraud investigation</div>
+        <h1>Fraud Operations Dashboard</h1>
+      </div>
+      <div class="ops-meta">
+        <span>Last updated</span>
+        <strong id="last-updated">--:--:--</strong>
+      </div>
+    </header>
+
+    <section class="kpi-grid">
+      <article class="stat-card kpi-card">
+        <div class="stat-label">Transactions Today</div>
+        <div class="stat-val" id="kpi-tx-today">--</div>
+      </article>
+      <article class="stat-card kpi-card">
+        <div class="stat-label">Fraud Detection Rate</div>
+        <div class="stat-val" id="kpi-fraud-rate">--</div>
+        <div class="stat-sub">blocked transactions</div>
+      </article>
+      <article class="stat-card kpi-card">
+        <div class="stat-label">Average Response Time</div>
+        <div class="stat-val" id="kpi-avg-time">--</div>
+        <div class="stat-sub">target under 100ms</div>
+      </article>
+      <article class="stat-card kpi-card">
+        <div class="stat-label">Active Alerts</div>
+        <div class="stat-val" id="kpi-active-alerts">--</div>
+      </article>
+    </section>
+
+    <section class="card action-panel">
+      <div class="card-header">
+        <div class="card-title">Run Fraud Check</div>
+        <a class="docs-link" href="/docs" target="_blank" rel="noreferrer">Swagger docs</a>
+      </div>
+      <form id="predict-form" class="predict-form">
+        <label>
+          Transaction ID
+          <input id="tx-id" name="transaction_id" placeholder="TXN_1001" />
+        </label>
+        <label>
+          Amount
+          <input id="tx-amount" name="amount" type="number" min="0" step="0.01" value="1450" required />
+        </label>
+        <label>
+          User ID
+          <input id="tx-user" name="user_id" value="user_001" required />
+        </label>
+        <label>
+          Merchant ID
+          <input id="tx-merchant" name="merchant_id" value="wire_transfer" required />
+        </label>
+        <button class="btn btn-primary" type="submit">Analyze</button>
+      </form>
+      <div id="predict-result"></div>
+    </section>
+
+    <section class="card action-panel">
+      <div class="card-header">
+        <div class="card-title">Live Fraud Automation</div>
+        <button class="btn btn-primary" id="automation-toggle" type="button">Start Automation</button>
+      </div>
+      <div class="automation-grid">
+        <div>
+          <div class="stat-label">Automation Status</div>
+          <div class="stat-val automation-val" id="automation-status">Ready</div>
+          <div class="stat-sub">Uses real POST /v1/fraud/predict calls</div>
+        </div>
+        <div>
+          <div class="stat-label">Generated Transactions</div>
+          <div class="stat-val automation-val" id="automation-count">0</div>
+          <div class="stat-sub">Saved into the API database</div>
+        </div>
+        <div>
+          <div class="stat-label">Last Decision</div>
+          <div class="stat-val automation-val" id="automation-last">--</div>
+          <div class="stat-sub">Fraud cases create alerts and evidence</div>
+        </div>
+      </div>
+      <div id="automation-log" class="automation-log"></div>
+    </section>
+
+    <section class="ops-grid">
+      <article class="card panel-wide">
+        <div class="card-header">
+          <div class="card-title">Recent Alerts</div>
+        </div>
+        <div id="alert-table-wrap"><div class="empty-state">Loading alerts...</div></div>
+        <div id="alert-detail"></div>
+      </article>
+
+      <article class="card panel-wide">
+        <div class="card-header">
+          <div class="card-title">Recent Transactions</div>
+        </div>
+        <div id="tx-table-wrap"><div class="empty-state">Loading transactions...</div></div>
+      </article>
+
+      <article class="card panel-wide">
+        <div class="card-header">
+          <div class="card-title">Blockchain Evidence</div>
+        </div>
+        <div id="bc-evidence-list"><div class="empty-state">Loading evidence...</div></div>
+        <div class="verify-row">
+          <input id="bc-hash-verify" placeholder="Verify evidence hash" />
+          <button class="btn btn-primary" onclick="runVerifyEvidence()">Verify</button>
+        </div>
+        <div id="verify-status"></div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div class="card-title">Fraud by Merchant</div>
+        </div>
+        <div id="merchant-chart" class="merchant-chart"><div class="empty-state">Loading merchant risk...</div></div>
+      </article>
+
+      <article class="card panel-wide">
+        <div class="card-header">
+          <div class="card-title">Fraud Trend - Last 7 Days</div>
+        </div>
+        <div id="chart-trend" class="chart-panel"><div class="empty-state">Loading fraud trend...</div></div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div class="card-title">System Health</div>
+        </div>
+        <div class="compact-health" id="health-strip">
+          <div class="health-chip"><span class="health-dot health-unknown" id="hd-api"></span><span>API</span></div>
+          <div class="health-chip"><span class="health-dot health-unknown" id="hd-fraud"></span><span>Fraud</span></div>
+          <div class="health-chip"><span class="health-dot health-unknown" id="hd-ks"></span><span>Keystroke</span></div>
+          <div class="health-chip"><span class="health-dot health-unknown" id="hd-mouse"></span><span>Mouse</span></div>
+          <div class="health-chip"><span class="health-dot health-unknown" id="hd-alerts"></span><span>Alerts</span></div>
+          <div class="health-chip"><span class="health-dot health-unknown" id="hd-payment"></span><span>Payment</span></div>
+          <div class="health-chip"><span class="health-dot health-unknown" id="hd-evidence"></span><span>Evidence</span></div>
+        </div>
+      </article>
+    </section>
+  </main>
+  <div class="toast-wrap" id="toast-wrap"></div>
+  <script src="/static/js/dashboard.js?v=sql-fraud-status-20260621"></script>
+  <style>
+    .automation-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .automation-val {
+      font-size: 18px;
+    }
+    .automation-log {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+      max-height: 178px;
+      overflow: auto;
+    }
+    .automation-event {
+      display: grid;
+      grid-template-columns: 125px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 10px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 12px;
+    }
+    .automation-event code {
+      color: var(--accent-2);
+      font-family: var(--mono);
+      overflow-wrap: anywhere;
+    }
+    @media (max-width: 980px) {
+      .automation-grid,
+      .automation-event {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <script>
+    (function () {
+      const apiBase = window.location.origin + '/v1';
+      const samples = [
+        { amount: 1450, merchant_id: 'wire_transfer', user_id: 'user_wire_771' },
+        { amount: 1890, merchant_id: 'crypto_exchange', user_id: 'user_crypto_882' },
+        { amount: 240, merchant_id: 'retail_checkout', user_id: 'user_retail_183' },
+        { amount: 1180, merchant_id: 'gift_card_bulk', user_id: 'user_gc_409' },
+        { amount: 760, merchant_id: 'travel_portal', user_id: 'user_travel_227' },
+        { amount: 2200, merchant_id: 'unknown_merchant', user_id: 'user_unknown_018' }
+      ];
+      let timer = null;
+      let count = 0;
+
+      function el(id) {
+        return document.getElementById(id);
+      }
+
+      function setText(id, value) {
+        const target = el(id);
+        if (target) target.textContent = value;
+      }
+
+      function riskText(score) {
+        return Math.round(Number(score || 0) * 100) + '%';
+      }
+
+      function logEvent(tx, result) {
+        const log = el('automation-log');
+        if (!log) return;
+        const row = document.createElement('div');
+        row.className = 'automation-event';
+        row.innerHTML =
+          '<code>' + tx.transaction_id + '</code>' +
+          '<span>' + tx.merchant_id + ' | $' + Number(tx.amount).toFixed(2) + ' | risk ' + riskText(result.risk_score) + '</span>' +
+          '<span class="badge ' + (result.is_fraud ? 'badge-high' : 'badge-low') + '">' + result.decision + '</span>';
+        log.prepend(row);
+        while (log.children.length > 8) log.lastElementChild.remove();
+      }
+
+      async function postJson(path, body) {
+        const response = await fetch(apiBase + path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!response.ok) throw new Error(path + ' returned ' + response.status);
+        return response.json();
+      }
+
+      async function createFraudAlert(tx, result) {
+        if (!result.is_fraud) return;
+        await postJson('/alerts/create', {
+          symbol: tx.merchant_id,
+          alert_type: 'automated_fraud_detection',
+          severity: 3,
+          description: 'Automated fraud engine blocked ' + tx.transaction_id + ' with risk score ' + riskText(result.risk_score)
+        });
+      }
+
+      async function generateTransaction() {
+        const seed = samples[count % samples.length];
+        const tx = {
+          transaction_id: 'AUTO_TX_' + Date.now() + '_' + String(count + 1).padStart(3, '0'),
+          amount: seed.amount,
+          user_id: seed.user_id,
+          merchant_id: seed.merchant_id
+        };
+        setText('automation-status', 'Analyzing');
+        try {
+          const result = await postJson('/fraud/predict', tx);
+          await createFraudAlert(tx, result);
+          count += 1;
+          setText('automation-count', count);
+          setText('automation-last', result.decision + ' ' + riskText(result.risk_score));
+          setText('automation-status', timer ? 'Running' : 'Ready');
+          logEvent(tx, result);
+          if (typeof window.refreshDashboard === 'function') {
+            window.refreshDashboard();
+          }
+        } catch (error) {
+          setText('automation-status', 'API Error');
+          const log = el('automation-log');
+          if (log) {
+            const row = document.createElement('div');
+            row.className = 'automation-event';
+            row.innerHTML = '<code>ERROR</code><span>' + error.message + '</span><span class="badge badge-high">FAILED</span>';
+            log.prepend(row);
+          }
+        }
+      }
+
+      function startAutomation() {
+        if (timer) return;
+        setText('automation-status', 'Running');
+        const button = el('automation-toggle');
+        if (button) button.textContent = 'Stop Automation';
+        generateTransaction();
+        timer = setInterval(generateTransaction, 5000);
+      }
+
+      function stopAutomation() {
+        clearInterval(timer);
+        timer = null;
+        setText('automation-status', 'Stopped');
+        const button = el('automation-toggle');
+        if (button) button.textContent = 'Start Automation';
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const button = el('automation-toggle');
+        if (button) {
+          button.addEventListener('click', function () {
+            if (timer) stopAutomation();
+            else startAutomation();
+          });
+        }
+        setTimeout(startAutomation, 1200);
+      });
+    }());
+  </script>
+</body>
+</html>
